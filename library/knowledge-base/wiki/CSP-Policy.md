@@ -1,30 +1,12 @@
+---
+type: config
+path: src/main/index.ts
+source: src/main/index.ts:35-45
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+worktree_state: modified
+status: current
+used_by: ["[[createWindow-sandboxed]]"]
+---
 # CSP-Policy
 
-**Type:** config
-**File:** `src/main/index.ts:34`
-**Exported:** no
-
-## Description
-Content Security Policy applied in production builds via the `onHeadersReceived` session web request handler. Restricts resource loading to same-origin and limits script execution to bundled files only. Allows inline styles (required by React component styles).
-
-## Signature
-
-```ts
-"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
-```
-
-## Directives
-| Directive | Value | Reason |
-|-----------|-------|--------|
-| `default-src` | `'self'` | Only load resources from same origin |
-| `script-src` | `'self'` | Only execute scripts from same origin |
-| `style-src` | `'self' 'unsafe-inline'` | Same-origin styles + inline styles for React |
-
-## Notes
-- **Not applied in dev mode** — Vite's HMR and React Fast Refresh require `unsafe-eval` and `unsafe-inline` for scripts
-- Injected via `win.webContents.session.webRequest.onHeadersReceived`
-
-## Related
-- [[createWindow]]
-- [[isDev]]
-- [[main-process]]
+Production registers an `onHeadersReceived` callback that supplies the same-origin CSP at `src/main/index.ts:35-45`. Development skips this handler because its HMR/Refresh requirements are documented at `src/main/index.ts:28-32`.

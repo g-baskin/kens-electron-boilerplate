@@ -1,31 +1,12 @@
+---
+type: object
+path: src/preload/index.ts
+source: src/preload/index.ts:17-21
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+worktree_state: modified
+status: current
+depends_on: ["[[RuntimeVersions]]"]
+---
 # versions
 
-**Type:** object
-**File:** `src/preload/index.ts:6`
-**Exported:** no (part of `electronAPI` context bridge)
-
-## Description
-Static object exposed on `window.electronAPI.versions` containing runtime version strings for Electron, Node.js, and Chrome. Captured at preload time from `process.versions`.
-
-## Signature
-
-```ts
-versions: {
-  electron: process.versions.electron,
-  node: process.versions.node,
-  chrome: process.versions.chrome,
-}
-```
-
-## Properties
-| Name | Type | Description |
-|------|------|-------------|
-| `electron` | `string` | Electron runtime version |
-| `node` | `string` | Node.js runtime version |
-| `chrome` | `string` | Chromium runtime version |
-
-## Related
-- [[electronAPI-bridge]]
-- [[ElectronAPI]]
-- [[preload]]
-- [[App]]
+The bridge exposes Electron, Node, and Chrome versions from `process.versions` at `src/preload/index.ts:17-21`. The matching readonly [[RuntimeVersions]] interface is at `src/shared/ipc.ts:21-25`.

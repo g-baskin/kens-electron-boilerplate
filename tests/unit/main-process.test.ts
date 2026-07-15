@@ -33,6 +33,7 @@ const mocks = vi.hoisted(() => {
   }));
 
   const appOn = vi.fn();
+  const enableSandbox = vi.fn();
 
   return {
     loadURL,
@@ -43,12 +44,14 @@ const mocks = vi.hoisted(() => {
     BrowserWindowInstance,
     whenReady,
     appOn,
+    enableSandbox,
     readyCallbacks,
   };
 });
 
 vi.mock('electron', () => ({
   app: {
+    enableSandbox: mocks.enableSandbox,
     whenReady: mocks.whenReady,
     on: mocks.appOn,
     quit: vi.fn(),
@@ -74,9 +77,13 @@ describe('Main Process', () => {
     await import('../../src/main/index');
   }
 
-  it('calls app.whenReady on startup', async () => {
+  it('enables the full sandbox before app readiness begins', async () => {
     await loadMain();
-    expect(mocks.whenReady).toHaveBeenCalled();
+    expect(mocks.enableSandbox).toHaveBeenCalledTimes(1);
+    expect(mocks.whenReady).toHaveBeenCalledTimes(1);
+    expect(mocks.enableSandbox.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.whenReady.mock.invocationCallOrder[0],
+    );
   });
 
   it('registers window-all-closed handler', async () => {
@@ -98,14 +105,16 @@ describe('Main Process', () => {
     );
   });
 
-  it('enables contextIsolation in webPreferences', async () => {
+  it('enables every BrowserWindow hardening preference and retains the preload path', async () => {
     await loadMain();
     mocks.readyCallbacks.forEach((cb) => cb());
     expect(mocks.BrowserWindowMock).toHaveBeenCalledWith(
       expect.objectContaining({
         webPreferences: expect.objectContaining({
+          preload: expect.any(String),
           contextIsolation: true,
           nodeIntegration: false,
+          sandbox: true,
         }),
       }),
     );

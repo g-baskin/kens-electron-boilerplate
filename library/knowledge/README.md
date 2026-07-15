@@ -6,18 +6,19 @@ Narrative documentation covering architecture, workflow, and technology decision
 
 | Document | What It Covers |
 |----------|---------------|
-| [architecture.md](architecture.md) | Three-process model, security boundaries, IPC data flow, CSP policy |
-| [development-workflow.md](development-workflow.md) | Dev server internals, HMR pipeline, testing strategy, linting, packaging |
+| [architecture.md](architecture.md) | Process model, sandbox lifecycle, bridge boundary, IPC data flow, CSP policy |
+| [development-workflow.md](development-workflow.md) | Dev server internals, reload behavior, testing strategy, linting, packaging |
 | [tech-stack.md](tech-stack.md) | Every dependency and why it was chosen, version rationale |
 
 ## Module Deep Dives
 
 Detailed reference for each source directory lives in [`modules/`](modules/README.md):
 
-- [Main Process](modules/main-process.md) — Window creation, app lifecycle, CSP enforcement
-- [Preload](modules/preload.md) — Context bridge API surface, security guarantees
-- [Renderer](modules/renderer.md) — React component tree, type declarations, entry point
-- [Build System](modules/build-system.md) — Vite config, esbuild pipelines, electron-builder packaging
+- [Shared IPC Contract](modules/shared-ipc.md) — Channel allowlist, request/result types, and bridge interface
+- [Main Process](modules/main-process.md) — Sandbox-first lifecycle, window creation, handlers, and CSP enforcement
+- [Preload](modules/preload.md) — Sandboxed context-bridge API surface and security guarantees
+- [Renderer](modules/renderer.md) — React component tree, contract-derived global type, and entry point
+- [Build System](modules/build-system.md) — Vite config, esbuild pipelines, reload behavior, and packaging
 
 ## How These Docs Are Written
 

@@ -1,35 +1,14 @@
-# electronAPI (context bridge)
+---
+type: bridge
+path: src/preload/index.ts
+source: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/preload/index.ts:3-14
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: stale
+superseded_by: "[[electronAPI-bridge-typed]]"
+---
+# electronAPI bridge
 
-**Type:** module
-**File:** `src/preload/index.ts:3`
-**Exported:** no (exposed via `contextBridge`)
+> [!stale]
+> The prior bridge used literal channel strings. The active bridge is [[electronAPI-bridge-typed]], which uses `IPC_CHANNELS` and a typed helper at `src/preload/index.ts:10-24`.
 
-## Description
-The API surface object injected into the renderer's `window` context by the preload script via `contextBridge.exposeInMainWorld`. Provides async wrappers around IPC channels and a static `versions` object containing Electron, Node, and Chrome runtime version strings.
-
-## Signature
-
-```ts
-contextBridge.exposeInMainWorld('electronAPI', {
-  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-  getPlatform: () => ipcRenderer.invoke('get-platform'),
-  versions: {
-    electron: process.versions.electron,
-    node: process.versions.node,
-    chrome: process.versions.chrome,
-  },
-});
-```
-
-## Properties
-| Name | Type | Description |
-|------|------|-------------|
-| `getAppVersion` | `() => Promise<string>` | Invokes `get-app-version` IPC channel |
-| `getPlatform` | `() => Promise<string>` | Invokes `get-platform` IPC channel |
-| `versions` | `{ electron, node, chrome }` | Static runtime version strings |
-
-## Related
-- [[ElectronAPI]]
-- [[versions]]
-- [[preload]]
-- [[Window-electronAPI]]
+The former object exposed methods and versions directly from `76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/preload/index.ts:3-14`.

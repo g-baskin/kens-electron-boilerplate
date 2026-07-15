@@ -17,7 +17,7 @@ Note: React and React DOM are listed as `devDependencies` because they are bundl
 | Dependency | Version | Role |
 |-----------|---------|------|
 | **Vite** | `^8.1.4` | Bundles the renderer. Provides HMR, React Fast Refresh, and production builds via Rollup. |
-| **esbuild** | `^0.28.1` | Bundles the main process and preload. Chosen for speed (~10ms builds) and native Node bundling. |
+| **esbuild** | `^0.28.1` | Bundles main and preload, including their local `src/shared/ipc.ts` dependency. Electron remains external. |
 | **electron-builder** | `^26.7.0` | Packages the app into distributable formats (dmg, nsis, AppImage). Config in `electron-builder.yml`. |
 | **@vitejs/plugin-react** | `^6.0.3` | Vite plugin for JSX transform and Fast Refresh. |
 
@@ -64,12 +64,13 @@ The flat config in `eslint.config.mjs` applies rules per context:
 
 | File | Purpose |
 |------|---------|
-| `src/renderer/types/electron.d.ts` | Augments `Window` with `electronAPI` interface. Gives the renderer full type safety for preload APIs without importing the preload. |
+| `src/shared/ipc.ts` | Dependency-free channel, request/result, runtime-version, and `ElectronAPI` contract shared across process boundaries. |
+| `src/renderer/types/electron.d.ts` | Imports the shared `ElectronAPI` type and augments `Window`; renderer code stays typed without importing preload implementation. |
 
 ## Design Decisions
 
-**Why esbuild for main/preload instead of Vite?** Main and preload are Node targets — they don't need HMR, CSS processing, or HTML entry. esbuild bundles them in ~10ms with zero configuration overhead.
+**Why esbuild for main/preload instead of Vite?** Both need small Electron-facing bundles rather than browser HTML/CSS processing. esbuild bundles their local shared contract while leaving Electron external; the resulting preload still executes under Electron's sandbox at runtime.
 
 **Why Vite for the renderer?** The renderer is a browser app that benefits from HMR, CSS modules, asset handling, and React Fast Refresh. Vite provides all of this with the `@vitejs/plugin-react` plugin.
 
-**Why `contextIsolation: true` + `sandbox: false`?** Context isolation is non-negotiable for security. Sandbox must be off because `contextBridge.exposeInMainWorld` requires Node access in the preload script.
+**Why sandboxing plus `contextIsolation: true`?** `src/main/index.ts:14` enables Electron's app-wide sandbox before readiness, and each window also sets `sandbox: true`, `contextIsolation: true`, and `nodeIntegration: false` (`src/main/index.ts:20-25`). The sandboxed preload can use Electron's renderer-safe `contextBridge` and `ipcRenderer` APIs; it exposes only the typed, allowlisted `ElectronAPI`, not Node or raw IPC access.

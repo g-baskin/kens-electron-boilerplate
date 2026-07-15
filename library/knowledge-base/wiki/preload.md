@@ -1,28 +1,13 @@
+---
+type: module
+path: src/preload/index.ts
+source: src/preload/index.ts:1-24
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+worktree_state: modified
+status: current
+depends_on: ["[[ipc-contract]]"]
+triggers: ["[[electronAPI-bridge-typed]]"]
+---
 # preload
 
-**Type:** module
-**File:** `src/preload/index.ts:1`
-**Exported:** no (entry point)
-
-## Description
-Preload script that bridges Electron's main process APIs to the renderer via `contextBridge.exposeInMainWorld`. Exposes the `electronAPI` object on `window` with async IPC wrappers and static version info.
-
-## Exports
-None — uses side-effect `contextBridge.exposeInMainWorld`.
-
-## Imports
-| Name | Source |
-|------|--------|
-| `contextBridge`, `ipcRenderer` | `electron` |
-
-## Exposed API
-The `electronAPI` object exposed to the renderer contains:
-- `getAppVersion()` → `Promise<string>` — invokes `get-app-version` IPC channel
-- `getPlatform()` → `Promise<string>` — invokes `get-platform` IPC channel
-- `versions` → `{ electron, node, chrome }` — static `process.versions` snapshot
-
-## Related
-- [[electronAPI-bridge]]
-- [[versions]]
-- [[ElectronAPI]]
-- [[main-process]]
+Preload imports Electron bridge APIs and the shared contract at `src/preload/index.ts:1-8`, defines [[typed-invoke]] at `src/preload/index.ts:10-12`, creates a contract-checked API object at `src/preload/index.ts:14-22`, and exposes it at `src/preload/index.ts:24`.

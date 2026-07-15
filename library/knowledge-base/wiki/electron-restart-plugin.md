@@ -1,35 +1,11 @@
+---
+type: esbuild-plugin
+path: scripts/dev.mjs
+source: scripts/dev.mjs:61-78
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: current
+triggers: ["[[startElectron]]"]
+---
 # electron-restart-plugin
 
-**Type:** esbuild-plugin
-**File:** `scripts/dev.mjs:62`
-**Exported:** no
-
-## Description
-Custom esbuild plugin used during development. After each successful main-process rebuild, it restarts the Electron process by calling `startElectron(url)`. Tracks first-build vs subsequent rebuilds for log output.
-
-## Signature
-
-```ts
-{
-  name: 'electron-restart',
-  setup(build) {
-    build.onEnd((result) => {
-      if (result.errors.length === 0) {
-        startElectron(url);
-      }
-    });
-  },
-}
-```
-
-## Behavior
-1. Hooks into `build.onEnd` callback
-2. Checks that the build has zero errors
-3. On first build: logs "Starting Electron..."
-4. On subsequent rebuilds: logs "Restarting Electron..."
-5. Calls `startElectron(url)` to kill old process and spawn new one
-
-## Related
-- [[startElectron]]
-- [[devMain]]
-- [[main-process]]
+The inline `electron-restart` plugin calls `startElectron(url)` after successful main builds at `scripts/dev.mjs:61-78`, distinguishing first build from rebuild for its log output at `scripts/dev.mjs:67-73`.

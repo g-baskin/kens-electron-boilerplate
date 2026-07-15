@@ -1,31 +1,12 @@
-# main-process
+---
+type: module
+path: src/main/index.ts
+source: src/main/index.ts:1-66
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+worktree_state: modified
+status: current
+triggers: ["[[registerIpcHandlers]]", "[[createWindow-sandboxed]]"]
+---
+# main process
 
-**Type:** module
-**File:** `src/main/index.ts:1`
-**Exported:** no (entry point)
-
-## Description
-Electron main process entry point. Controls application lifecycle, creates the browser window, registers IPC handlers, applies security policies, and manages platform-specific quit behavior.
-
-## Exports
-None — this is the app entry point.
-
-## Imports
-| Name | Source |
-|------|--------|
-| `app`, `BrowserWindow` | `electron` |
-| `path` | `path` |
-| `registerIpcHandlers` | `./ipc` |
-
-## Key Behaviors
-- Suppresses Electron security warnings in dev mode
-- Calls `registerIpcHandlers()` and `createWindow()` on `app.whenReady()`
-- Re-creates window on `activate` (macOS dock click)
-- Quits app on `window-all-closed` (non-macOS)
-
-## Related
-- [[createWindow]]
-- [[registerIpcHandlers]]
-- [[isDev]]
-- [[CSP-Policy]]
-- [[BrowserWindowOptions]]
+The Electron main entry enables app-wide sandboxing before readiness at `src/main/index.ts:14`. After readiness it registers IPC handlers and creates the window at `src/main/index.ts:51-53`, recreates a window on activation at `src/main/index.ts:55-59`, and quits on non-macOS closure at `src/main/index.ts:62-66`.

@@ -9,13 +9,14 @@ library/
 ├── README.md                          ← You are here
 └── knowledge/
     ├── README.md                      ← Knowledge base overview
-    ├── architecture.md                ← Process model, security, IPC flow
-    ├── development-workflow.md        ← Scripts, HMR, testing, packaging
+    ├── architecture.md                ← Process model, sandbox lifecycle, IPC flow
+    ├── development-workflow.md        ← Scripts, reload behavior, testing, packaging
     ├── tech-stack.md                  ← Dependency decisions and versions
     └── modules/
         ├── README.md                  ← Module index
+        ├── shared-ipc.md              ← Typed cross-process IPC contract
         ├── main-process.md            ← Electron main process deep dive
-        ├── preload.md                 ← Context bridge and security model
+        ├── preload.md                 ← Sandboxed context bridge boundary
         ├── renderer.md                ← React/TypeScript renderer deep dive
         └── build-system.md            ← Vite, esbuild, electron-builder pipeline
 ```
@@ -38,7 +39,8 @@ library/
 
 ## Project at a Glance
 
-- **3 source directories**: `src/main/`, `src/preload/`, `src/renderer/`
+- **4 source directories**: `src/main/`, `src/preload/`, `src/renderer/`, `src/shared/`
+- **1 typed IPC contract**: `src/shared/ipc.ts` is consumed by main, preload, and renderer typings
 - **3 build tools**: Vite (renderer), esbuild (main + preload), electron-builder (packaging)
-- **Security**: contextIsolation on, nodeIntegration off, strict CSP in production
+- **Security**: app-wide and per-window sandboxing, context isolation on, Node integration off, strict CSP in production
 - **Zero-config**: clone → `npm install` → `npm run dev`

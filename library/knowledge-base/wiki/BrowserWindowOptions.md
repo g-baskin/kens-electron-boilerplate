@@ -1,38 +1,14 @@
+---
+type: config
+path: src/main/index.ts
+source: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/main/index.ts:17-25
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: stale
+superseded_by: "[[BrowserWindowOptions-sandboxed]]"
+---
 # BrowserWindowOptions
 
-**Type:** config
-**File:** `src/main/index.ts:15`
-**Exported:** no
+> [!stale]
+> This historical configuration recorded `sandbox: false`. The active contract is [[BrowserWindowOptions-sandboxed]], which sets `sandbox: true` at `src/main/index.ts:20-25` after `app.enableSandbox()` at `src/main/index.ts:14`.
 
-## Description
-Configuration object passed to the `BrowserWindow` constructor. Sets window dimensions and security-hardened web preferences including context isolation and the preload script path.
-
-## Signature
-
-```ts
-{
-  width: 900,
-  height: 670,
-  webPreferences: {
-    preload: path.join(__dirname, '../preload/index.js'),
-    contextIsolation: true,
-    nodeIntegration: false,
-    sandbox: false,
-  },
-}
-```
-
-## Properties
-| Key | Value | Description |
-|-----|-------|-------------|
-| `width` | `900` | Initial window width in pixels |
-| `height` | `670` | Initial window height in pixels |
-| `webPreferences.preload` | `../preload/index.js` | Path to the preload script |
-| `webPreferences.contextIsolation` | `true` | Isolates preload from renderer context |
-| `webPreferences.nodeIntegration` | `false` | Disables Node.js in renderer |
-| `webPreferences.sandbox` | `false` | Disables Chromium sandbox (needed for preload) |
-
-## Related
-- [[createWindow]]
-- [[preload]]
-- [[main-process]]
+The prior BrowserWindow options set the preload path, `contextIsolation: true`, `nodeIntegration: false`, and `sandbox: false` in `76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/main/index.ts:17-25`.

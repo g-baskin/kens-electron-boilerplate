@@ -1,31 +1,13 @@
-# Window.electronAPI
+---
+type: interface-augmentation
+path: src/renderer/types/electron.d.ts
+source: src/renderer/types/electron.d.ts:1-9
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+worktree_state: modified
+status: current
+depends_on: ["[[ElectronAPI-contract]]"]
+used_by: ["[[App]]", "[[app-test-suite]]"]
+---
+# Window electronAPI
 
-**Type:** type
-**File:** `src/renderer/types/electron.d.ts:4`
-**Exported:** no (global augmentation)
-
-## Description
-Global `Window` interface augmentation that adds the `electronAPI` property. This makes `window.electronAPI` available as a typed global throughout the renderer codebase without explicit imports.
-
-## Signature
-
-```ts
-declare global {
-  interface Window {
-    electronAPI: {
-      getAppVersion: () => Promise<string>;
-      getPlatform: () => Promise<string>;
-      versions: {
-        electron: string;
-        node: string;
-        chrome: string;
-      };
-    };
-  }
-}
-```
-
-## Related
-- [[ElectronAPI]]
-- [[preload]]
-- [[App]]
+The global `Window` augmentation sets `electronAPI: ElectronAPI` at `src/renderer/types/electron.d.ts:5-9`. The interface comes from [[ElectronAPI-contract]] through the import at `src/renderer/types/electron.d.ts:1`.

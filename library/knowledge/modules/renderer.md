@@ -10,7 +10,8 @@ The React/TypeScript frontend that runs in Electron's Chromium browser process. 
 | `src/renderer/main.tsx` | React entry point — creates root and renders `<App>` |
 | `src/renderer/App.tsx` | Root component — displays system info via IPC |
 | `src/renderer/App.css` | Global styles — dark theme, layout, card grid |
-| `src/renderer/types/electron.d.ts` | Global type augmentation for `window.electronAPI` |
+| `src/shared/ipc.ts` | Dependency-free contract that owns renderer-visible bridge types |
+| `src/renderer/types/electron.d.ts` | Imports `ElectronAPI` from the shared contract and augments `window.electronAPI` |
 
 ## Entry Point
 
@@ -95,18 +96,21 @@ The layout uses flexbox for centering (`body` and `#root` are both flex containe
 
 ## Type Safety
 
-The renderer accesses `window.electronAPI` without any import because `src/renderer/types/electron.d.ts` augments the global `Window` interface. This file uses the module augmentation pattern:
+The renderer accesses `window.electronAPI` without importing preload implementation because `src/renderer/types/electron.d.ts:1-9` imports `ElectronAPI` from `src/shared/ipc.ts` and augments the global `Window` interface:
 
 ```typescript
-export {};  // makes it a module
+import type { ElectronAPI } from '../../shared/ipc';
+
+export {};
+
 declare global {
   interface Window {
-    electronAPI: { ... };
+    electronAPI: ElectronAPI;
   }
 }
 ```
 
-The `tsconfig.json` includes `src` in its `include` array, so this declaration is automatically picked up by all renderer files.
+The `tsconfig.json` includes `src`, so this declaration is available to all renderer files. The concrete methods remain an allowlisted context-bridge API; renderer code does not receive `ipcRenderer` or a generic channel invocation function. See [shared-ipc.md](shared-ipc.md) and [preload.md](preload.md).
 
 ## Testing
 
@@ -121,4 +125,4 @@ The `tsconfig.json` includes `src` in its `include` array, so this declaration i
 - **New component**: Create in `src/renderer/`, import from `App.tsx` or a router
 - **Routing**: Install `react-router-dom`, wrap `<App>` in a `<BrowserRouter>`
 - **State management**: Add a context provider or a library like Zustand above `<App>`
-- **New IPC data**: Call `window.electronAPI.newMethod()` in a `useEffect`, store result in state
+- **New IPC data**: First extend the shared contract and explicit preload allowlist, then call the typed `window.electronAPI.newMethod()` in a `useEffect` and store the result in state

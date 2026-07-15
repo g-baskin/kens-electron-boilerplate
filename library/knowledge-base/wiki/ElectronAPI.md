@@ -1,37 +1,14 @@
+---
+type: interface
+path: src/renderer/types/electron.d.ts
+source: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/renderer/types/electron.d.ts:4-15
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: stale
+superseded_by: "[[ElectronAPI-contract]]"
+---
 # ElectronAPI
 
-**Type:** type
-**File:** `src/renderer/types/electron.d.ts:5`
-**Exported:** no (ambient declaration)
+> [!stale]
+> This page described a renderer-local interface. The canonical interface now lives in [[ElectronAPI-contract]] at `src/shared/ipc.ts:27-31`, and the renderer imports it at `src/renderer/types/electron.d.ts:1`.
 
-## Description
-TypeScript interface describing the shape of the `window.electronAPI` object exposed by the preload script via `contextBridge`. Enables type-safe access to IPC methods and version info from the renderer process.
-
-## Signature
-
-```ts
-interface ElectronAPI {
-  getAppVersion: () => Promise<string>;
-  getPlatform: () => Promise<string>;
-  versions: {
-    electron: string;
-    node: string;
-    chrome: string;
-  };
-}
-```
-
-## Properties
-| Name | Type | Description |
-|------|------|-------------|
-| `getAppVersion` | `() => Promise<string>` | Async IPC call to get app version |
-| `getPlatform` | `() => Promise<string>` | Async IPC call to get OS platform |
-| `versions` | `ElectronAPIVersions` | Static snapshot of runtime versions |
-
-## Related
-- [[electronAPI-bridge]]
-- [[versions]]
-- [[Window-electronAPI]]
-- [[preload]]
-- [[get-app-version]]
-- [[get-platform]]
+The prior local declaration appears in `76ea0cfb8b4bdd86b458334fdda9e987cd023e0d:src/renderer/types/electron.d.ts:4-15`.

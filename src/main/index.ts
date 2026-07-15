@@ -11,6 +11,8 @@ if (isDev) {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 }
 
+app.enableSandbox();
+
 function createWindow(): void {
   const win = new BrowserWindow({
     width: 900,
@@ -19,7 +21,7 @@ function createWindow(): void {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 

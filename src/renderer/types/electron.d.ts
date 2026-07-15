@@ -1,15 +1,9 @@
+import type { ElectronAPI } from '../../shared/ipc';
+
 export {};
 
 declare global {
   interface Window {
-    electronAPI: {
-      getAppVersion: () => Promise<string>;
-      getPlatform: () => Promise<string>;
-      versions: {
-        electron: string;
-        node: string;
-        chrome: string;
-      };
-    };
+    electronAPI: ElectronAPI;
   }
 }

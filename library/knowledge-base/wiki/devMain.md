@@ -1,20 +1,11 @@
+---
+type: function
+path: scripts/dev.mjs
+source: scripts/dev.mjs:30-98
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: current
+triggers: ["[[startElectron]]", "[[electron-restart-plugin]]", "[[devCleanup]]"]
+---
 # devMain
 
-**Type:** function
-**File:** `scripts/dev.mjs:30`
-**Exported:** no
-
-## Description
-Entry point for the development workflow. Orchestrates three concurrent tasks: (1) starts a Vite dev server for the renderer, (2) builds and watches the preload script with esbuild, (3) builds and watches the main process with esbuild, restarting Electron on each rebuild. Sets up SIGINT/SIGTERM cleanup handlers.
-
-## Signature
-
-```ts
-async function main(): Promise<void>
-```
-
-## Related
-- [[startElectron]]
-- [[devCleanup]]
-- [[electron-restart-plugin]]
-- [[vite-config]]
+The development entry starts Vite, watches preload and main esbuild bundles, and attaches cleanup behavior at `scripts/dev.mjs:30-93`. Its final error handler logs and exits at `scripts/dev.mjs:95-98`.

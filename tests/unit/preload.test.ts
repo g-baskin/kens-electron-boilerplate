@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { IPC_CHANNELS, type ElectronAPI } from '../../src/shared/ipc';
 
 const mocks = vi.hoisted(() => ({
   exposeInMainWorld: vi.fn(),
@@ -21,59 +22,49 @@ describe('Preload Script', () => {
     await import('../../src/preload/index');
   }
 
-  function getExposedApi() {
-    return mocks.exposeInMainWorld.mock.calls[0][1] as Record<string, unknown>;
+  function getExposedApi(): ElectronAPI {
+    return mocks.exposeInMainWorld.mock.calls[0][1] as ElectronAPI;
   }
 
-  it('exposes electronAPI to the main world', async () => {
+  it('exposes exactly one electronAPI namespace', async () => {
     await loadPreload();
+    expect(mocks.exposeInMainWorld).toHaveBeenCalledTimes(1);
     expect(mocks.exposeInMainWorld).toHaveBeenCalledWith('electronAPI', expect.any(Object));
   });
 
-  it('exposes exactly one API namespace', async () => {
-    await loadPreload();
-    expect(mocks.exposeInMainWorld).toHaveBeenCalledTimes(1);
-  });
-
-  it('electronAPI has getAppVersion method', async () => {
+  it('exposes only the declared bridge allowlist', async () => {
     await loadPreload();
     const api = getExposedApi();
-    expect(typeof api.getAppVersion).toBe('function');
+    expect(Object.keys(api)).toEqual(['getAppVersion', 'getPlatform', 'versions']);
+    expect(api).not.toHaveProperty('invoke');
+    expect(api).not.toHaveProperty('send');
+    expect(api).not.toHaveProperty('sendSync');
+    expect(api).not.toHaveProperty('on');
+    expect(api).not.toHaveProperty('once');
+    expect(api).not.toHaveProperty('removeListener');
+    expect(api).not.toHaveProperty('removeAllListeners');
   });
 
-  it('electronAPI has getPlatform method', async () => {
+  it('getAppVersion invokes only its contract channel without arguments', async () => {
     await loadPreload();
-    const api = getExposedApi();
-    expect(typeof api.getPlatform).toBe('function');
+    getExposedApi().getAppVersion();
+    expect(mocks.invoke).toHaveBeenCalledOnce();
+    expect(mocks.invoke).toHaveBeenCalledWith(IPC_CHANNELS.getAppVersion);
   });
 
-  it('electronAPI has versions object with expected keys', async () => {
+  it('getPlatform invokes only its contract channel without arguments', async () => {
     await loadPreload();
-    const api = getExposedApi();
-    const versions = api.versions as Record<string, unknown>;
-    expect(versions).toHaveProperty('electron');
-    expect(versions).toHaveProperty('node');
-    expect(versions).toHaveProperty('chrome');
+    getExposedApi().getPlatform();
+    expect(mocks.invoke).toHaveBeenCalledOnce();
+    expect(mocks.invoke).toHaveBeenCalledWith(IPC_CHANNELS.getPlatform);
   });
 
-  it('getAppVersion invokes correct IPC channel', async () => {
+  it('exposes exactly the current runtime version fields', async () => {
     await loadPreload();
-    const api = getExposedApi();
-    (api.getAppVersion as () => void)();
-    expect(mocks.invoke).toHaveBeenCalledWith('get-app-version');
-  });
-
-  it('getPlatform invokes correct IPC channel', async () => {
-    await loadPreload();
-    const api = getExposedApi();
-    (api.getPlatform as () => void)();
-    expect(mocks.invoke).toHaveBeenCalledWith('get-platform');
-  });
-
-  it('versions.node matches current process', async () => {
-    await loadPreload();
-    const api = getExposedApi();
-    const versions = api.versions as Record<string, string>;
-    expect(versions.node).toBe(process.versions.node);
+    expect(getExposedApi().versions).toEqual({
+      electron: process.versions.electron,
+      node: process.versions.node,
+      chrome: process.versions.chrome,
+    });
   });
 });

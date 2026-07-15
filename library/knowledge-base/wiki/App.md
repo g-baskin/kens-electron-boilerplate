@@ -1,35 +1,11 @@
+---
+type: component
+path: src/renderer/App.tsx
+source: src/renderer/App.tsx:3-56
+last_commit_hash: 5d2a46c4f55590fdd6a47f05631ee010adc775bf
+status: current
+depends_on: ["[[Window-electronAPI]]"]
+---
 # App
 
-**Type:** component
-**File:** `src/renderer/App.tsx:3`
-**Exported:** yes (default)
-
-## Description
-Root React component of the renderer. Fetches the app version and platform from the main process via `window.electronAPI` on mount, and displays a dashboard with version info (Electron, Node, Chrome) and a tech-stack badge row.
-
-## Signature
-
-```tsx
-function App(): JSX.Element
-```
-
-## State
-| Name | Type | Initial | Description |
-|------|------|---------|-------------|
-| `appVersion` | `string` | `'...'` | Application version from main process |
-| `platform` | `string` | `'...'` | OS platform from main process |
-
-## Side Effects
-- `useEffect([], [])` — calls `electronAPI.getAppVersion()` and `electronAPI.getPlatform()` on mount
-
-## Rendered Elements
-- `.app` container
-  - `h1` — title
-  - `.info-grid` — six `.info-card` entries (App Version, Platform, Electron, Node, Chrome, Renderer)
-  - `.tech-stack` — four `.tech-badge` spans (Electron, React, TypeScript, Vite)
-
-## Related
-- [[ElectronAPI]]
-- [[renderer-entry]]
-- [[get-app-version]]
-- [[get-platform]]
+The root renderer component fetches app version and platform through `window.electronAPI` on mount at `src/renderer/App.tsx:3-12`, renders six information cards at `src/renderer/App.tsx:19-44`, and is the default export at `src/renderer/App.tsx:56`.

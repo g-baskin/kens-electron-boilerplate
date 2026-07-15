@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import App from '../../src/renderer/App';
+import type { ElectronAPI } from '../../src/shared/ipc';
 
 describe('App', () => {
   beforeEach(() => {
@@ -14,7 +15,7 @@ describe('App', () => {
         node: '20.0.0',
         chrome: '130.0.0',
       },
-    };
+    } satisfies ElectronAPI;
   });
 
   describe('static rendering', () => {

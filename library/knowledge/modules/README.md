@@ -6,6 +6,7 @@ Deep-dive reference for each source directory in the project.
 
 | Module | Source Directory | Entry Point | Bundler |
 |--------|-----------------|-------------|---------|
+| [Shared IPC Contract](shared-ipc.md) | `src/shared/` | `src/shared/ipc.ts` | Bundled into main and preload |
 | [Main Process](main-process.md) | `src/main/` | `src/main/index.ts` | esbuild |
 | [Preload](preload.md) | `src/preload/` | `src/preload/index.ts` | esbuild |
 | [Renderer](renderer.md) | `src/renderer/` | `src/renderer/main.tsx` | Vite |
@@ -14,11 +15,15 @@ Deep-dive reference for each source directory in the project.
 ## Dependency Flow
 
 ```
+shared-ipc.md
+    ├── imported by → main-process.md
+    ├── imported by → preload.md
+    └── provides types to → renderer.md
+
 build-system.md
-    │
-    ├── builds → main-process.md    (esbuild → dist/main/index.js)
-    ├── builds → preload.md         (esbuild → dist/preload/index.js)
-    └── builds → renderer.md        (Vite → dist/renderer/)
+    ├── bundles main-process.md + shared-ipc.md → dist/main/index.js
+    ├── bundles preload.md + shared-ipc.md → dist/preload/index.js
+    └── builds renderer.md → dist/renderer/
 ```
 
 ## How to Read These Docs
@@ -31,4 +36,4 @@ Each module doc covers:
 4. **Testing** — how the module is tested and what's mocked
 5. **Extension points** — where to add new functionality
 
-Start with the module you need to modify. Cross-reference with [architecture.md](../architecture.md) for the security and IPC model.
+For a cross-process capability, start with [shared-ipc.md](shared-ipc.md), then cross-reference [architecture.md](../architecture.md) for the security and IPC model.

@@ -1,43 +1,10 @@
+---
+type: config
+path: eslint.config.mjs
+source: eslint.config.mjs:1-43
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: current
+---
 # eslint-config
 
-**Type:** config
-**File:** `eslint.config.mjs:1`
-**Exported:** yes (default)
-
-## Description
-ESLint flat config that defines linting rules across the project. Configures TypeScript-ESLint as the base, applies React Hooks and React Refresh rules to renderer code, uses Node.js globals for main/preload code, and uses browser globals for renderer and test code.
-
-## Signature
-
-```ts
-export default tseslint.config(
-  { ignores: ['dist', 'release', 'node_modules', 'scripts'] },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  { /* renderer config block */ },
-  { /* main/preload config block */ },
-  { /* test config block */ },
-);
-```
-
-## Config Blocks
-
-### Renderer (`src/renderer/**/*.{ts,tsx}`)
-- Plugins: `react-hooks`, `react-refresh`
-- Rules: `react-hooks` recommended + `react-refresh/only-export-components: 'warn'`
-- Globals: `browser`
-
-### Main & Preload (`src/main/**/*.ts`, `src/preload/**/*.ts`)
-- Globals: `node`
-
-### Tests (`tests/**/*.{ts,tsx}`)
-- Plugins: `react-hooks`
-- Rules: `react-hooks` recommended
-- Globals: `browser`
-
-## Ignored Paths
-`dist`, `release`, `node_modules`, `scripts`
-
-## Related
-- [[vite-config]]
-- [[vitest-config]]
+The flat configuration ignores generated/dependency paths at `eslint.config.mjs:7-10`, applies React browser rules to the renderer at `eslint.config.mjs:11-24`, Node globals to main/preload at `eslint.config.mjs:25-30`, and browser/hooks rules to tests at `eslint.config.mjs:31-42`.

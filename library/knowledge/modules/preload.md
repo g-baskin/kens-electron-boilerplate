@@ -1,92 +1,88 @@
 # Preload
 
-The context bridge between the main process and the renderer. This is the security boundary — everything the renderer can access from Node/Electron flows through this single file.
+The sandbox-safe context bridge between main and renderer. This is the capability boundary: every Electron feature visible to page code must be deliberately exposed here.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `src/preload/index.ts` | Defines the `window.electronAPI` surface via `contextBridge` |
-| `src/renderer/types/electron.d.ts` | TypeScript declarations for the exposed API (consumed by renderer) |
+| `src/preload/index.ts` | Defines the strict `window.electronAPI` allowlist via `contextBridge` |
+| `src/shared/ipc.ts` | Shared IPC channel, request/response, runtime-version, and bridge types |
+| `src/renderer/types/electron.d.ts` | Global declaration derived from the shared `ElectronAPI` type |
 
-## How Context Bridge Works
+## Sandboxed Context Bridge
 
-The preload script runs in a privileged context with Node access, but `contextIsolation: true` (set in `src/main/index.ts:20`) means the renderer cannot see preload globals directly. Instead, the preload explicitly opts in to sharing specific functions via `contextBridge.exposeInMainWorld`.
+The preload runs with `contextIsolation: true` and full Chromium sandboxing. Electron's renderer-safe `contextBridge` and `ipcRenderer` APIs remain available, but arbitrary Node module access does not. `app.enableSandbox()` must execute before readiness (`src/main/index.ts:14`), and the window also sets `sandbox: true` (`src/main/index.ts:20-25`).
 
-The entire preload is 11 lines (`src/preload/index.ts`):
+The preload is bundled by esbuild. That bundle inlines the local dependency-free shared contract, allowing `src/shared/ipc.ts` to work under the sandbox. Keep preload imports limited to renderer-safe Electron APIs and bundled local modules; never add filesystem, Node, or raw transport exposure.
+
+## Typed Bridge Implementation
+
+`src/preload/index.ts` has one private typed invoke boundary:
 
 ```typescript
-import { contextBridge, ipcRenderer } from 'electron';
+function invoke<C extends IpcChannel>(channel: C, ...args: IpcArgs<C>): Promise<IpcResult<C>> {
+  return ipcRenderer.invoke(channel, ...args) as Promise<IpcResult<C>>;
+}
+```
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-  getPlatform: () => ipcRenderer.invoke('get-platform'),
-  versions: {
-    electron: process.versions.electron,
-    node: process.versions.node,
-    chrome: process.versions.chrome,
-  },
-});
+Electron declares `ipcRenderer.invoke` with an untyped result, so the single assertion remains inside this private boundary. Public methods use only `IPC_CHANNELS` and an API object that satisfies `ElectronAPI`, then expose that object at line 24:
+
+```typescript
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 ```
 
 ## Exposed API Surface
 
-`window.electronAPI` exposes three members:
+`window.electronAPI` exposes exactly three own enumerable members:
 
 | Member | Type | Behavior |
 |--------|------|----------|
-| `getAppVersion()` | `() => Promise<string>` | Calls `ipcRenderer.invoke('get-app-version')`, which routes to `ipcMain.handle` in `src/main/ipc.ts:4` |
-| `getPlatform()` | `() => Promise<string>` | Calls `ipcRenderer.invoke('get-platform')`, which routes to `ipcMain.handle` in `src/main/ipc.ts:8` |
-| `versions` | `{ electron, node, chrome }` | Synchronous object — values are read from `process.versions` at preload time |
+| `getAppVersion()` | `() => Promise<string>` | Invokes `IPC_CHANNELS.getAppVersion` through the private helper (`src/preload/index.ts:15`) |
+| `getPlatform()` | `() => Promise<string>` | Invokes `IPC_CHANNELS.getPlatform` through the private helper (`src/preload/index.ts:16`) |
+| `versions` | readonly `{ electron, node, chrome }` | Captures sandbox-provided `process.versions` values at preload execution time |
 
-The `versions` object is notable: it captures version strings at preload execution time, not on demand. These are baked-in strings, not live references.
+The `versions` object contains baked-in strings, not live references. The renderer receives no `invoke`, `send`, `sendSync`, `on`, `once`, or listener-removal primitive.
 
 ## Security Guarantees
 
-1. **No raw `ipcRenderer` exposure** — The renderer cannot call arbitrary IPC channels. It can only invoke `get-app-version` and `get-platform` because those are the only functions exposed.
-
-2. **No Node module access** — `nodeIntegration: false` prevents `require()` in the renderer. The preload is the sole gatekeeper.
-
-3. **Serialization boundary** — Data crossing the context bridge is serialized and deserialized (structured clone algorithm). Functions are proxied, not shared by reference. This prevents the renderer from injecting behavior into the main process.
-
-4. **Sandbox is off** — `sandbox: false` in `src/main/index.ts:23` is required because `contextBridge.exposeInMainWorld` needs Node bindings in the preload. If sandbox were `true`, the preload would run in a Chromium sandbox with no Node access.
+1. **Strict bridge allowlist** — The only renderer-visible Electron capability is `window.electronAPI` with the three members above.
+2. **Contract-only IPC** — The private helper accepts only `IpcChannel` values declared by `src/shared/ipc.ts`; page code cannot choose an arbitrary channel.
+3. **No raw `ipcRenderer` exposure** — All transport primitives stay inside preload.
+4. **Sandboxed renderer and preload** — Renderer Node integration is disabled and the app-wide sandbox is forced before Electron becomes ready.
+5. **Serialization boundary** — Context bridge data crosses the structured-clone boundary and functions are proxied rather than shared by reference.
 
 ## Type Declarations
 
-The renderer knows about `window.electronAPI` through `src/renderer/types/electron.d.ts`:
+`src/renderer/types/electron.d.ts` imports `ElectronAPI` from `src/shared/ipc.ts` and declares:
 
 ```typescript
 declare global {
   interface Window {
-    electronAPI: {
-      getAppVersion: () => Promise<string>;
-      getPlatform: () => Promise<string>;
-      versions: {
-        electron: string;
-        node: string;
-        chrome: string;
-      };
-    };
+    electronAPI: ElectronAPI;
   }
 }
 ```
 
-This uses `declare global` with an `export {}` to make it a module augmentation. Any `.ts`/`.tsx` file in `src/renderer/` gets autocomplete on `window.electronAPI` without importing anything.
+The renderer, preload, and main process therefore use the same contract. Adding or removing bridge members fails type checking until all affected boundaries agree.
 
 ## Testing
 
-`tests/unit/preload.test.ts` mocks `electron` with `vi.hoisted` and dynamically imports the preload. It verifies:
+`tests/unit/preload.test.ts` dynamically imports preload with Electron mocks and verifies:
 
-- `exposeInMainWorld` is called exactly once with `'electronAPI'` as the key
-- `getAppVersion` and `getPlatform` are functions that invoke the correct IPC channels
-- The `versions` object has `electron`, `node`, and `chrome` keys
-- `versions.node` matches `process.versions.node`
+- The bridge is exposed once under the only namespace, `electronAPI`.
+- Its own keys are exactly `getAppVersion`, `getPlatform`, and `versions`.
+- No raw IPC/control primitive is exposed.
+- Each method invokes only its corresponding `IPC_CHANNELS` entry without arguments.
+- The runtime-version object contains exactly Electron, Node, and Chrome values.
 
 ## Extension Points
 
-To expose a new API to the renderer:
+To expose a new renderer capability:
 
-1. Add an `ipcMain.handle('channel-name', ...)` in `src/main/ipc.ts`
-2. Add a method in `src/preload/index.ts`: `myMethod: () => ipcRenderer.invoke('channel-name')`
-3. Update the type declaration in `src/renderer/types/electron.d.ts`
-4. Call it in the renderer: `window.electronAPI.myMethod()`
+1. Extend `IpcContract` and `IPC_CHANNELS` in `src/shared/ipc.ts`.
+2. Register the matching `ipcMain.handle` implementation in `src/main/ipc.ts`.
+3. Add one narrow method to the preload API object and update `ElectronAPI` in the shared contract.
+4. Consume the typed `window.electronAPI` method in renderer code.
+
+Keep the shared module dependency-free so esbuild can bundle it into the sandbox-compatible preload artifact.

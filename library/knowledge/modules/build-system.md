@@ -7,10 +7,10 @@ The three-tool pipeline that compiles source code into a distributable Electron 
 ```
 Source Code                    Build Output
 ───────────                    ────────────
-src/renderer/  ──Vite──────→  dist/renderer/    (HTML + JS + CSS)
-src/main/      ──esbuild──→  dist/main/        (Node bundle)
-src/preload/   ──esbuild──→  dist/preload/     (Node bundle)
-dist/**/*      ──electron-builder──→ release/   (dmg, nsis, AppImage)
+src/renderer/             ──Vite──────→  dist/renderer/    (HTML + JS + CSS)
+src/main/ + src/shared/    ──esbuild──→  dist/main/        (Electron main bundle)
+src/preload/ + src/shared/ ──esbuild──→  dist/preload/     (sandboxed preload bundle)
+dist/**/*                  ──electron-builder──→ release/   (dmg, nsis, AppImage)
 ```
 
 ## Vite — Renderer Bundler
@@ -71,8 +71,8 @@ esbuild.build({
 ```
 
 Key settings:
-- `platform: 'node'` — Targets Node.js. Resolves Node built-ins, doesn't inject browser polyfills.
-- `external: ['electron']` — Electron is provided at runtime by the Electron binary. Bundling it would be incorrect and enormous.
+- `platform: 'node'` — Uses Electron's Node-oriented module-resolution shape for both bundles. This is a build target, not permission for the sandboxed preload to use arbitrary Node APIs at runtime.
+- `external: ['electron']` — Electron is supplied by the Electron binary at runtime. esbuild bundles local imports, including `src/shared/ipc.ts`, while leaving Electron external.
 - `minify: true` — Production builds are minified. Dev builds are not (faster rebuilds).
 - `sourcemap: true` — Always generates source maps for debugging.
 
@@ -86,7 +86,7 @@ Key settings:
 3. esbuild watch       (line 54)  → rebuilds main + restarts Electron on change
 ```
 
-**Electron restart mechanism** (`dev.mjs:61-77`): A custom esbuild plugin called `electron-restart` hooks into the `onEnd` event. On successful rebuild, it calls `startElectron(url)` which kills the previous Electron process and spawns a new one with the current Vite dev server URL injected via `VITE_DEV_SERVER_URL`.
+**Electron restart mechanism** (`scripts/dev.mjs:61-77`): The `electron-restart` plugin is attached to the **main** esbuild context. On a successful main build, it calls `startElectron(url)`, which kills the previous Electron process and spawns a new one with `VITE_DEV_SERVER_URL`. The preload context has no equivalent `onEnd` hook (`scripts/dev.mjs:42-50`), so a preload-only rebuild writes a new bundle but does not reload the running preload; restart Electron to apply it.
 
 **Cleanup** (`dev.mjs:83-89`): SIGINT/SIGTERM handlers kill Electron, dispose esbuild contexts, close the Vite server, and exit. This prevents zombie processes.
 
@@ -96,8 +96,8 @@ Key settings:
 
 1. **Clean** (`rmSync('dist', ...)`) — Removes the entire `dist/` directory
 2. **Renderer** (`execSync('npx vite build')`) — Vite produces optimized HTML/JS/CSS in `dist/renderer/`
-3. **Main** (esbuild) — Bundles and minifies to `dist/main/index.js`
-4. **Preload** (esbuild) — Bundles and minifies to `dist/preload/index.js`
+3. **Main** (esbuild) — Bundles and minifies main plus its local shared-contract import to `dist/main/index.js`
+4. **Preload** (esbuild) — Bundles and minifies preload plus its local shared-contract import to `dist/preload/index.js`
 
 The main entry in `package.json:5` points to `dist/main/index.js`, which Electron loads at startup.
 

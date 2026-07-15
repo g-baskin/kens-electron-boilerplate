@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { IPC_CHANNELS } from '../../src/shared/ipc';
 
 const mocks = vi.hoisted(() => ({
   handle: vi.fn(),
@@ -20,23 +21,25 @@ describe('IPC Handlers', () => {
 
   it('registers get-app-version handler', () => {
     registerIpcHandlers();
-    expect(mocks.handle).toHaveBeenCalledWith('get-app-version', expect.any(Function));
+    expect(mocks.handle).toHaveBeenCalledWith(IPC_CHANNELS.getAppVersion, expect.any(Function));
   });
 
   it('registers get-platform handler', () => {
     registerIpcHandlers();
-    expect(mocks.handle).toHaveBeenCalledWith('get-platform', expect.any(Function));
+    expect(mocks.handle).toHaveBeenCalledWith(IPC_CHANNELS.getPlatform, expect.any(Function));
   });
 
-  it('registers exactly 2 handlers', () => {
+  it('registers exactly the contract channel allowlist', () => {
     registerIpcHandlers();
-    expect(mocks.handle).toHaveBeenCalledTimes(2);
+    expect(mocks.handle.mock.calls.map(([channel]) => channel)).toEqual(
+      Object.values(IPC_CHANNELS),
+    );
   });
 
   it('get-app-version handler returns app version', () => {
     registerIpcHandlers();
     const handler = mocks.handle.mock.calls.find(
-      (call: unknown[]) => call[0] === 'get-app-version',
+      (call: unknown[]) => call[0] === IPC_CHANNELS.getAppVersion,
     )?.[1] as () => string;
     expect(handler()).toBe('1.0.0');
   });
@@ -44,7 +47,7 @@ describe('IPC Handlers', () => {
   it('get-app-version handler calls app.getVersion()', () => {
     registerIpcHandlers();
     const handler = mocks.handle.mock.calls.find(
-      (call: unknown[]) => call[0] === 'get-app-version',
+      (call: unknown[]) => call[0] === IPC_CHANNELS.getAppVersion,
     )?.[1] as () => string;
     handler();
     expect(mocks.getVersion).toHaveBeenCalled();
@@ -53,7 +56,7 @@ describe('IPC Handlers', () => {
   it('get-platform handler returns process.platform', () => {
     registerIpcHandlers();
     const handler = mocks.handle.mock.calls.find(
-      (call: unknown[]) => call[0] === 'get-platform',
+      (call: unknown[]) => call[0] === IPC_CHANNELS.getPlatform,
     )?.[1] as () => string;
     expect(handler()).toBe(process.platform);
   });

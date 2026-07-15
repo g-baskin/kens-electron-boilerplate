@@ -1,25 +1,11 @@
+---
+type: function
+path: scripts/dev.mjs
+source: scripts/dev.mjs:12-28
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: current
+used_by: ["[[devMain]]", "[[electron-restart-plugin]]"]
+---
 # startElectron
 
-**Type:** function
-**File:** `scripts/dev.mjs:12`
-**Exported:** no
-
-## Description
-Spawns the Electron process, passing the Vite dev server URL via the `VITE_DEV_SERVER_URL` environment variable. Kills any previously running Electron process before starting a new one. Exits the parent process when Electron closes.
-
-## Signature
-
-```ts
-function startElectron(url: string): void
-```
-
-## Parameters
-| Name | Type | Description |
-|------|------|-------------|
-| `url` | `string` | The Vite dev server URL to inject into the Electron process env |
-
-## Related
-- [[devMain]]
-- [[electron-restart-plugin]]
-- [[isDev]]
-- [[main-process]]
+`startElectron(url)` kills an existing child, spawns Electron with `VITE_DEV_SERVER_URL`, and inherits stdio at `scripts/dev.mjs:12-21`; its close callback exits the parent for non-null codes at `scripts/dev.mjs:23-27`.

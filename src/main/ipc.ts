@@ -1,11 +1,12 @@
-import { ipcMain, app } from 'electron';
+import { app, ipcMain } from 'electron';
+import { IPC_CHANNELS, type IpcResult } from '../shared/ipc';
 
 export function registerIpcHandlers(): void {
-  ipcMain.handle('get-app-version', () => {
+  ipcMain.handle(IPC_CHANNELS.getAppVersion, (): IpcResult<typeof IPC_CHANNELS.getAppVersion> => {
     return app.getVersion();
   });
 
-  ipcMain.handle('get-platform', () => {
+  ipcMain.handle(IPC_CHANNELS.getPlatform, (): IpcResult<typeof IPC_CHANNELS.getPlatform> => {
     return process.platform;
   });
 }

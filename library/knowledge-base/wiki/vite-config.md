@@ -1,43 +1,10 @@
+---
+type: config
+path: vite.config.ts
+source: vite.config.ts:1-16
+last_commit_hash: 76ea0cfb8b4bdd86b458334fdda9e987cd023e0d
+status: current
+---
 # vite-config
 
-**Type:** config
-**File:** `vite.config.ts:1`
-**Exported:** yes (default)
-
-## Description
-Vite configuration for the renderer process. Sets the project root to `src/renderer`, uses relative base paths for Electron file protocol compatibility, and configures the React plugin for JSX transform and Fast Refresh.
-
-## Signature
-
-```ts
-export default defineConfig({
-  root: 'src/renderer',
-  base: './',
-  plugins: [react()],
-  build: {
-    outDir: '../../dist/renderer',
-    emptyOutDir: true,
-  },
-  server: {
-    port: 5173,
-    strictPort: true,
-  },
-});
-```
-
-## Properties
-| Key | Value | Description |
-|-----|-------|-------------|
-| `root` | `'src/renderer'` | Renderer source as Vite project root |
-| `base` | `'./'` | Relative asset paths for Electron `file://` protocol |
-| `plugins` | `[react()]` | `@vitejs/plugin-react` for JSX + Fast Refresh |
-| `build.outDir` | `'../../dist/renderer'` | Build output relative to root |
-| `build.emptyOutDir` | `true` | Clean output dir before build |
-| `server.port` | `5173` | Dev server port |
-| `server.strictPort` | `true` | Fail if port is already in use |
-
-## Related
-- [[renderer-entry]]
-- [[devMain]]
-- [[buildMain]]
-- [[vitest-config]]
+Vite uses `src/renderer` as root, a relative base, and the React plugin at `vite.config.ts:4-7`; its renderer output and fixed development port are configured at `vite.config.ts:8-15`.
