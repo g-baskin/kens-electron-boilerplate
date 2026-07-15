@@ -8,3 +8,9 @@ Thumbs.db
 *.swo
 .env
 .env.local
+
+# Agent/tooling config
+.gg/
+ggcoder*
+.ggcoder*
+*.ggcoder
